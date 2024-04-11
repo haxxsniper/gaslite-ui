@@ -1,11 +1,16 @@
-import Image from "next/image";
+import { AirdropKlay } from '@/components/airdrop-klay';
+import MobileWarning from '@/components/mobile-warning';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Home() {
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        Test
+    <main className="flex flex-col gap-8 items-center justify-center py-12 px-4 lg:p-36">
+      <div className="hidden lg:flex lg:flex-col lg:gap-12">
+        <ConnectButton />
+        <AirdropKlay />
       </div>
+      <MobileWarning />
     </main>
   );
 }
