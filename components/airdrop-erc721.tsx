@@ -39,17 +39,13 @@ import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
 import { useChainId } from 'wagmi'
 
 const formSchema = z.object({
-  amount: z.coerce
-    .number({
-      required_error: "Amount is required",
-      invalid_type_error: "Amount must be a number",
-    })
-    .positive({ message: "Amount must be positive" }),
   addresses: z.string(),
+  tokenAddress: z.string(),
   airdropAmounts: z.string(),
+  totalAirdropAmount: z.string(),
 });
 
-export function AirdropKlay() {
+export function AirdropERC721() {
   const { toast } = useToast();
   const chainId = useChainId()
   const { data: hash, error, isPending, writeContract } = useWriteContract();
@@ -59,14 +55,19 @@ export function AirdropKlay() {
   });
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const tokenAddress: (`0x${string}`) = values.tokenAddress as `0x${string}`;
+    console.log(tokenAddress)
+    const totalAirdropAmount: bigint = parseEther(values.totalAirdropAmount.toString());
+    console.log(totalAirdropAmount)
     const addresses: (`0x${string}`)[] = values.addresses.split(",").map((address) => address.replace(/\s/g, "") as `0x${string}`);
+    console.log(addresses)
     const airdropAmounts: bigint[] = values.airdropAmounts.split(",").map((amount) => parseEther(amount));
+    console.log(airdropAmounts)
     writeContract({
       abi,
       address: chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS,
-      functionName: 'airdropETH',
-      args: [addresses, airdropAmounts],
-      value: parseEther(values.amount.toString()),
+      functionName: 'airdropERC721',
+      args: [tokenAddress, addresses, airdropAmounts]
     })
     if (error) {
       toast({
@@ -89,9 +90,9 @@ export function AirdropKlay() {
   return (
     <Card className="w-full border-0 shadow-lg lg:max-w-3xl">
       <CardHeader>
-        <CardTitle>Airdrop KLAY</CardTitle>
+        <CardTitle>Aidrop ERC721 Token</CardTitle>
         <CardDescription>
-          Use this form to airdrop KLAY to multiple addresses.
+          Use this form to airdrop ERC721 tokens to multiple addresses.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -99,14 +100,35 @@ export function AirdropKlay() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="amount"
+              name="tokenAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>ERC721 token address</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      placeholder="Enter an amount in KLAY"
+                      type="text"
+                      placeholder="Enter the ERC721 token address"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Provide the contract address of the airdrop token.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="totalAirdropAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Total ERC721 amount</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Enter an amount in token symbol"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -127,14 +149,14 @@ export function AirdropKlay() {
                   <FormLabel>Addresses</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter addresses separating with comma (,)"
+                      placeholder="Enter addresses"
                       type="text"
                       {...field}
                       value={field.value ?? ""}
                     />
                   </FormControl>
                   <FormDescription>
-                    You will enter your addresses in the following format 0x1234,0x5678,0x90ab
+                    Addresses
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -155,7 +177,7 @@ export function AirdropKlay() {
                     />
                   </FormControl>
                   <FormDescription>
-                    You will enter the corresponding airdrop amounts in the following format 2, 3, 4.5
+                    Amounts
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -168,7 +190,7 @@ export function AirdropKlay() {
                 Please wait
               </Button>
             ) : (
-              <Button type="submit">Airdrop KLAY</Button>
+              <Button type="submit">Airdrop ERC721</Button>
             )}
           </form>
         </Form>

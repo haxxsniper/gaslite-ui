@@ -1,3 +1,5 @@
+import { AirdropERC20 } from '@/components/airdrop-erc20';
+import { AirdropERC721 } from '@/components/airdrop-erc721';
 import { AirdropKlay } from '@/components/airdrop-klay';
 import Credits from '@/components/credits';
 import MobileWarning from '@/components/mobile-warning';
@@ -10,6 +12,8 @@ export default function Home() {
       <div className="hidden lg:flex lg:flex-col lg:gap-12 max-w-3xl">
         <ConnectButton />
         <AirdropKlay />
+        <AirdropERC20 />
+        <AirdropERC721 />
         <Credits />
       </div>
       <MobileWarning />
