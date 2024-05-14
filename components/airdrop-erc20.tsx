@@ -50,10 +50,6 @@ const formSchema = z.object({
   totalAirdropAmount: z.string(),
 });
 
-const readTokenInfoFormSchema = z.object({
-  tokenAddress: z.string(),
-});
-
 const setAllowanceFormSchema = z.object({
   amount: z.string(),
 });
@@ -143,13 +139,6 @@ export function AirdropERC20() {
       args: [chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS, amount]
     })
   }
-
-
-  // 0xfbafe784a4ee4fb559636cec7f760158ea90f86f
-  // 50
-  // 0x1B7a0b3E366CC0549A96ED4123E8058d59282f3f,0x6a672dD588577E3d4b57c45CDDA243129b80847d
-  // 25,25
-
 
 
   function truncateAddress(address: string) {
