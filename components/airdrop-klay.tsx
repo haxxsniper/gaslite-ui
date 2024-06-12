@@ -8,7 +8,7 @@ import {
   useWriteContract,
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
-import { Loader2, Check, Plus, Info } from "lucide-react";
+import { Loader2, Check, Plus, Info, Trash2 } from "lucide-react";
 import { abi } from "./abi";
 import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
 import { useChainId } from "wagmi";
@@ -37,22 +37,28 @@ export function AirdropKlay() {
 
   // state for file input
   const [file, setFile] = useState<File | undefined>(undefined);
-  const fileReader = new FileReader();
+
+  useEffect(() => {
+    const fileReader = new FileReader();
+    fileReader.onload = function (e: ProgressEvent<FileReader>) {
+      if (e.target) {
+        const text = e.target.result;
+        csvFileToArray(text);
+      }
+    }
+    if (file) {
+      fileReader.readAsText(file);
+    }
+  }, [file]);
 
   function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
       setFile(file);
-      fileReader.onload = function (e: ProgressEvent<FileReader>) {
-        if (e.target) {
-          const text = e.target.result;
-          csvFileToArray(text);
-        }
-      }
-      fileReader.readAsText(file);
     }
-    console.log(file);
   }
+
+
 
   // function to convert the csv file to airdropList
   function csvFileToArray(text: string | ArrayBuffer | null) {
@@ -70,6 +76,10 @@ export function AirdropKlay() {
 
   function handleAddAirdropList() {
     setAirdropList(airdropList.concat({ address: "", amount: "" }));
+  }
+
+  function handleResetAirdropList() {
+    setAirdropList([]);
   }
 
   function handleAddressChange(index: number) {
@@ -196,13 +206,22 @@ export function AirdropKlay() {
                 </div>
               )
             }
-            <Button
-              onClick={handleAddAirdropList}
-              variant="outline"
-              size="icon"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
+            <div className="flex flex-row gap-2">
+              <Button
+                onClick={handleAddAirdropList}
+                variant="outline"
+                size="icon"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={handleResetAirdropList}
+                variant="outline"
+                size="icon"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </TabsContent>
           <TabsContent className="flex flex-col gap-4" value="file-input">
             <p>
