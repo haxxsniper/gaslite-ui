@@ -12,7 +12,7 @@ import {
 } from "wagmi";
 import { parseEther, formatEther, formatUnits, Address } from "viem";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Check, Plus, Info, Trash2, ArrowBigUpDash } from "lucide-react";
+import { Loader2, Check, Plus, Info, Trash2, ThumbsUp, CircleX } from "lucide-react";
 import { abi } from "./abi";
 import { erc721Abi } from "./erc721-abi";
 import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
@@ -142,12 +142,21 @@ export function AirdropERC721() {
     })
   }
 
-  function onApprove() {
+  function setApproval() {
     approveWriteContract({
       abi: erc721Abi,
       address: erc721TokenAddress as Address,
       functionName: 'setApprovalForAll',
       args: [chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS, true]
+    })
+  }
+
+  function revokeApproval() {
+    approveWriteContract({
+      abi: erc721Abi,
+      address: erc721TokenAddress as Address,
+      functionName: 'setApprovalForAll',
+      args: [chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS, false]
     })
   }
 
@@ -220,6 +229,13 @@ export function AirdropERC721() {
                 ? "You have not set approval"
                 : "You are ready to airdrop"}
             </p>
+            <Button
+              onClick={tokenInfoData[0]?.result === false ? setApproval : revokeApproval}
+              className={`w-[300px] mt-4 ${tokenInfoData[0]?.result === false ? "bg-primary" : "bg-destructive"}`}
+            >
+              {tokenInfoData[0]?.result === false ? <ThumbsUp className="h-4 w-4 mr-2" /> : <CircleX className="h-4 w-4 mr-2" />}
+              {tokenInfoData[0]?.result === false ? "Set approval" : "Revoke approval"}
+            </Button>
           </div>
         ) : (
           <Skeleton className="w-full h-16" />
