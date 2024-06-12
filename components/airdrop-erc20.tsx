@@ -203,9 +203,12 @@ export function AirdropERC20() {
     approveWriteContract({
       abi: erc20Abi,
       address: erc20TokenAddress as `0x${string}`,
-      functionName: 'approve',
-      args: [chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS, totalAirdropAmount]
-    })
+      functionName: "approve",
+      args: [
+        chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS,
+        totalAirdropAmount,
+      ],
+    });
   }
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -411,21 +414,31 @@ export function AirdropERC20() {
                 BigInt(tokenInfoData[0]?.result ?? 0),
                 tokenInfoData[3]?.result ?? 0
               )}
-              {
-                totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+              {totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
                 ? " - Insufficient approval amount please increase"
-                : " - You are ready to airdrop"
-              }
+                : " - You are ready to airdrop"}
             </p>
-            <Button
-              onClick={handleIncreaseApprovalAmount}
-              disabled={totalAirdropAmount <= BigInt(tokenInfoData[0]?.result ?? 0)}
-            >Increase approval amount to {formatEther(totalAirdropAmount).toString()} KAIA</Button>
+            {approveIsPending ? (
+              <Button className="w-full" disabled>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please confirm in your wallet
+              </Button>
+            ) : (
+              <Button
+                disabled={
+                  totalAirdropAmount <= BigInt(tokenInfoData[0]?.result ?? 0)
+                }
+                className="w-full"
+                onClick={handleIncreaseApprovalAmount}
+              >
+                Increase approval amount to{" "}
+                {formatEther(totalAirdropAmount).toString()} KAIA
+              </Button>
+            )}
           </div>
         ) : (
           <p className="mt-4">No results found.</p>
         )}
-
       </div>
     </div>
   );
