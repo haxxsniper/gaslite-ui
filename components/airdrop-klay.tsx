@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +13,6 @@ import { Loader2, Check, Plus, Info, Trash2 } from "lucide-react";
 import { abi } from "./abi";
 import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
 import { useChainId } from "wagmi";
-import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type AirdropItem = {
@@ -25,9 +25,11 @@ type Address = `0x${string}`;
 export function AirdropKlay() {
   // state for airdrop list using manual input
   const [airdropList, setAirdropList] = useState<AirdropItem[]>([]);
-  const [totalAirdropAmount, setTotalAirdropAmount] = useState<bigint>(
-    BigInt(0)
-  );
+  const totalAirdropAmount = useMemo(() => {
+    return airdropList.reduce((acc, item) => {
+      return acc + BigInt(parseEther(item.amount));
+    }, BigInt(0));
+  }, [airdropList]);
 
   // get chainID to determine which contract to use
   const chainId = useChainId();
@@ -57,7 +59,6 @@ export function AirdropKlay() {
       setFile(file);
     }
   }
-
 
 
   // function to convert the csv file to airdropList
@@ -98,13 +99,6 @@ export function AirdropKlay() {
     };
   }
 
-  // calculate total airdrop amount when airdropList changes
-  useEffect(() => {
-    const total = airdropList.reduce((acc, item) => {
-      return acc + BigInt(parseEther(item.amount));
-    }, BigInt(0));
-    setTotalAirdropAmount(total);
-  }, [airdropList]);
 
   function executeAirdrop() {
     // sanitize airdropList from any empty objects

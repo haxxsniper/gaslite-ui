@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,8 +10,7 @@ import {
   useAccount,
   useReadContracts,
 } from "wagmi";
-import { parseEther } from "viem";
-import { formatUnits } from "viem";
+import { parseEther, formatEther, formatUnits } from "viem";
 import { Loader2, Check, Plus, Info, Trash2 } from "lucide-react";
 import { abi } from "./abi";
 import { erc20Abi } from "./erc20-abi";
@@ -30,10 +29,11 @@ export function AirdropERC20() {
   const account = useAccount();
   // state for airdrop list using manual input
   const [airdropList, setAirdropList] = useState<AirdropItem[]>([]);
-  const [totalAirdropAmount, setTotalAirdropAmount] = useState<bigint>(
-    BigInt(0)
-  );
-
+  const totalAirdropAmount: bigint = useMemo(() => {
+    return airdropList.reduce((acc, item) => {
+      return acc + BigInt(parseEther(item.amount));
+    }, BigInt(0));
+  }, [airdropList]);
   // get chainID to determine which contract to use
   const chainId = useChainId();
   const [erc20TokenAddress, setErc20TokenAddress] = useState<string>("");
@@ -148,12 +148,12 @@ export function AirdropERC20() {
   }
 
   // calculate total airdrop amount when airdropList changes
-  useEffect(() => {
-    const total = airdropList.reduce((acc, item) => {
-      return acc + BigInt(parseEther(item.amount));
-    }, BigInt(0));
-    setTotalAirdropAmount(total);
-  }, [airdropList]);
+  // useEffect(() => {
+  //   const total = airdropList.reduce((acc, item) => {
+  //     return acc + BigInt(parseEther(item.amount));
+  //   }, BigInt(0));
+  //   setTotalAirdropAmount(total);
+  // }, [airdropList]);
 
   function executeAirdrop() {
     // sanitize airdropList from any empty objects
@@ -199,15 +199,14 @@ export function AirdropERC20() {
 
   // }
 
-  // function onApprove(values: z.infer<typeof setAllowanceFormSchema>) {
-  //   const amount: bigint = parseEther(values.amount.toString());
-  //   approveWriteContract({
-  //     abi: erc20Abi,
-  //     address: erc20TokenAddress as `0x${string}`,
-  //     functionName: 'approve',
-  //     args: [chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS, amount]
-  //   })
-  // }
+  function handleIncreaseApprovalAmount() {
+    approveWriteContract({
+      abi: erc20Abi,
+      address: erc20TokenAddress as `0x${string}`,
+      functionName: 'approve',
+      args: [chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS, totalAirdropAmount]
+    })
+  }
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
@@ -354,7 +353,21 @@ export function AirdropERC20() {
         </h2>
         <div className="flex flex-row gap-2 items-center">
           <Info className="h-4 w-4" />
-          <p>Add the token address to check for information</p>
+          <p>Check and confirm the total airdrop amount</p>
+        </div>
+
+        <p className="font-semibold text-2xl">
+          {formatEther(totalAirdropAmount).toString()}
+          <span className="inline-block align-baseline text-sm ml-2">KAIA</span>
+        </p>
+      </div>
+      <div className="flex flex-col gap-4">
+        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+          Step 3
+        </h2>
+        <div className="flex flex-row gap-2 items-center">
+          <Info className="h-4 w-4" />
+          <p>Add the token address to check</p>
         </div>
         <div className="flex flex-col gap-3">
           <Input
@@ -366,7 +379,13 @@ export function AirdropERC20() {
           />
         </div>
         {tokenInfoData ? (
-          <div className="flex flex-col gap-2">
+          <div
+            className={
+              totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+                ? "flex flex-col gap-2 border border-destructive p-4"
+                : "flex flex-col gap-2 border border-primary p-4"
+            }
+          >
             <div className="flex flex-row gap-4 items-center">
               <div className="bg-gray-300 rounded-full h-12 w-12 flex justify-center items-center">
                 <p>{tokenInfoData[1]?.result?.toString().charAt(0)}</p>
@@ -380,17 +399,33 @@ export function AirdropERC20() {
                 </p>
               </div>
             </div>
-            <p>
+            <p
+              className={
+                totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+                  ? "text-destructive"
+                  : "text-primary"
+              }
+            >
               Approval amount:{" "}
               {formatUnits(
                 BigInt(tokenInfoData[0]?.result ?? 0),
                 tokenInfoData[3]?.result ?? 0
               )}
+              {
+                totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+                ? " - Insufficient approval amount please increase"
+                : " - You are ready to airdrop"
+              }
             </p>
+            <Button
+              onClick={handleIncreaseApprovalAmount}
+              disabled={totalAirdropAmount <= BigInt(tokenInfoData[0]?.result ?? 0)}
+            >Increase approval amount to {formatEther(totalAirdropAmount).toString()} KAIA</Button>
           </div>
         ) : (
           <p className="mt-4">No results found.</p>
         )}
+
       </div>
     </div>
   );
