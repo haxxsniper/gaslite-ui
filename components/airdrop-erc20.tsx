@@ -37,7 +37,6 @@ export function AirdropERC20() {
   // get chainID to determine which contract to use
   const chainId = useChainId();
   const [erc20TokenAddress, setErc20TokenAddress] = useState<string>("");
-  const [erc20TokenSymbol, setErc20TokenSymbol] = useState<string>("");
   const { data: hash, error, isPending, writeContract } = useWriteContract();
   const {
     data: approveHash,
@@ -81,12 +80,6 @@ export function AirdropERC20() {
       },
     ],
   });
-
-  useEffect(() => {
-    if (tokenInfoSuccess) {
-      setErc20TokenSymbol(tokenInfoData[1]?.result?.toString() ?? "");
-    }
-  }, [tokenInfoData, tokenInfoSuccess]);
 
   // state for file input
   const [file, setFile] = useState<File | undefined>(undefined);
@@ -174,30 +167,14 @@ export function AirdropERC20() {
       abi,
       address:
         chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS,
-      functionName: "airdropETH",
-      args: [addresses, airdropAmounts],
-      value: totalAirdropAmount,
+      functionName: "airdropERC20",
+      args: [erc20TokenAddress as Address, addresses, airdropAmounts, totalAirdropAmount]
     });
   }
 
   function truncateAddress(address: string) {
     return `${address.slice(0, 10)}...${address.slice(-10)}`;
   }
-
-  // 2. Define a submit handler.
-  // function onSubmit(values: z.infer<typeof formSchema>) {
-  //   const tokenAddress: (`0x${string}`) = erc20TokenAddress as `0x${string}`;
-  //   const totalAirdropAmount: bigint = parseEther(values.totalAirdropAmount.toString());
-  //   const addresses: (`0x${string}`)[] = values.addresses.split(",").map((address) => address.replace(/\s/g, "") as `0x${string}`);
-  //   const airdropAmounts: bigint[] = values.airdropAmounts.split(",").map((amount) => parseEther(amount));
-  //   writeContract({
-  //     abi: abi,
-  //     address: chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS,
-  //     functionName: 'airdropERC20',
-  //     args: [tokenAddress, addresses, airdropAmounts, totalAirdropAmount]
-  //   })
-
-  // }
 
   function handleIncreaseApprovalAmount() {
     approveWriteContract({
@@ -361,7 +338,7 @@ export function AirdropERC20() {
 
         <p className="font-semibold text-2xl">
           {formatEther(totalAirdropAmount).toString()}
-          <span className="inline-block align-baseline text-sm ml-2">KAIA</span>
+          <span className="inline-block align-baseline text-sm ml-2">tokens</span>
         </p>
       </div>
       <div className="flex flex-col gap-4">
@@ -432,12 +409,81 @@ export function AirdropERC20() {
                 onClick={handleIncreaseApprovalAmount}
               >
                 Increase approval amount to{" "}
-                {formatEther(totalAirdropAmount).toString()} KAIA
+                {formatEther(totalAirdropAmount).toString()} {tokenInfoData[1]?.result?.toString()}
               </Button>
             )}
           </div>
         ) : (
           <p className="mt-4">No results found.</p>
+        )}
+      </div>
+      <div className="flex flex-col gap-4">
+        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+          Step 4
+        </h2>
+        <div className="flex flex-row gap-2 items-center">
+          <Info className="h-4 w-4" />
+          <p>Execute the airdrop</p>
+        </div>
+        {isPending ? (
+          <Button className="w-[300px]" disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please confirm in your wallet
+          </Button>
+        ) : (
+          <Button className="w-[300px]" onClick={executeAirdrop}>
+            Airdrop ERC20
+          </Button>
+        )}
+      </div>
+      <div className="flex flex-col gap-4">
+        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+          Transaction status
+        </h2>
+        {
+          isConfirming && (
+            <div className="flex flex-row gap-2 text-yellow-500 font-semibold text-lg">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              Waiting for confirmation...
+            </div>
+          )
+        }
+        {isConfirmed && (
+          <div className="flex flex-row gap-2 text-green-500 font-semibold text-lg">
+            <Check className="h-6 w-6" />
+            Transaction confirmed!
+          </div>
+        )}
+        {
+          // if there is an error, show the error message
+          error && (
+            <div>
+              Transaction reverted:{" "}
+              {(error as BaseError).shortMessage.split(":")[1]}
+            </div>
+          )
+        }
+        {hash ? (
+          <div className="flex flex-row gap-2">
+            Transaction hash:
+            <a
+              target="_blank"
+              className="text-blue-500 underline"
+              href={
+                chainId === 1001
+                  ? `https://baobab.klaytnfinder.io/tx/${hash}`
+                  : `https://klaytnfinder.io/tx/${hash}`
+              }
+            >
+              {truncateAddress(hash)}
+            </a>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-row gap-2">
+              Nothing yet :)
+            </div>
+          </>
         )}
       </div>
     </div>
