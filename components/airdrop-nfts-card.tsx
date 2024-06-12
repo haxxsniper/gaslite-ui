@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { type BaseError, useReadContract, useAccount, useChainId } from "wagmi";
 import { Address } from "viem";
-import { erc20Abi } from "./erc20-abi";
 import { useState } from "react";
+import { erc721Abi } from "./erc721-abi";
 
 export default function AirdropNftsCard() {
   const account = useAccount();
@@ -17,7 +17,7 @@ export default function AirdropNftsCard() {
     error,
     isPending,
   } = useReadContract({
-    abi: erc20Abi,
+    abi: erc721Abi,
     address: contractAddress as Address,
     functionName: "symbol",
   });
