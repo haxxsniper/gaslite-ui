@@ -22,7 +22,7 @@ type AirdropItem = {
 
 type Address = `0x${string}`;
 
-export function AirdropKlay() {
+export function AirdropKaia() {
   // state for airdrop list using manual input
   const [airdropList, setAirdropList] = useState<AirdropItem[]>([]);
   const totalAirdropAmount = useMemo(() => {

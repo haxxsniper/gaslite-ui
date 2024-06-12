@@ -1,4 +1,4 @@
-import { AirdropKlay } from "@/components/airdrop-klay";
+import { AirdropKaia } from "@/components/airdrop-kaia";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   Breadcrumb,
@@ -24,7 +24,7 @@ export default function Home() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <AirdropKlay />
+      <AirdropKaia />
     </div>
   );
 }
