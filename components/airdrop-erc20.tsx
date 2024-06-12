@@ -10,21 +10,20 @@ import {
   useAccount,
   useReadContracts,
 } from "wagmi";
-import { parseEther, formatEther, formatUnits } from "viem";
+import { parseEther, formatEther, formatUnits, Address } from "viem";
 import { Loader2, Check, Plus, Info, Trash2, ArrowBigUpDash } from "lucide-react";
 import { abi } from "./abi";
 import { erc20Abi } from "./erc20-abi";
 import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
 import { useChainId } from "wagmi";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "next/navigation";
 
 type AirdropItem = {
   address: string;
   amount: string;
 };
-
-type Address = `0x${string}`;
 
 export function AirdropERC20() {
   const searchParams = useSearchParams();
@@ -228,7 +227,7 @@ export function AirdropERC20() {
                 : "flex flex-col gap-2 border border-primary p-4"
             }
           >
-            <div className="flex flex-row gap-4 items-center">
+            <div className="flex flex-row gap-4 items-center h-16">
               <div className="bg-gray-300 rounded-full h-12 w-12 flex justify-center items-center">
                 <p>{tokenInfoData[1]?.result?.toString().charAt(0)}</p>
               </div>
@@ -259,7 +258,7 @@ export function AirdropERC20() {
             </p>
           </div>
         ) : (
-          <p className="mt-4">No results found.</p>
+          <Skeleton className="w-full h-16" />
         )}
       </div>
       <div className="flex flex-col gap-4">
@@ -410,7 +409,6 @@ export function AirdropERC20() {
           </Button>
         )}
       </div>
-
       <div className="flex flex-col gap-4">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
           Step 4
