@@ -1,5 +1,4 @@
-import { AirdropKaia } from "@/components/airdrop-kaia";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,10 +8,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-export default function Home() {
+export default function Loading() {
   return (
     <div className="flex flex-col gap-12">
-      <ConnectButton />
+      <Skeleton className="w-40 h-8" />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -20,11 +19,11 @@ export default function Home() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Airdrop KAIA</BreadcrumbPage>
+            <BreadcrumbPage>Airdrop NFTs</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <AirdropKaia />
+      <Skeleton className="w-[768px] h-[200px]" />
     </div>
   );
 }
