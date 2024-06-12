@@ -1,6 +1,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import AirdropErc20Card from "@/components/airdrop-erc20-card";
 import AirdropKaiaCard from "@/components/airdrop-kaia-card";
+import AirdropNftsCard from "@/components/airdrop-nfts-card";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <div className="flex flex-col gap-8">
         <AirdropKaiaCard />
         <AirdropErc20Card />
+        <AirdropNftsCard />
       </div>
     </div>
   );
