@@ -1,4 +1,3 @@
-import { AirdropKlay } from "@/components/airdrop-klay";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   Breadcrumb,
@@ -8,6 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { AirdropERC721 } from "@/components/airdrop-erc721";
 
 export default function Home() {
   return (
@@ -20,11 +20,11 @@ export default function Home() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Airdrop KAIA</BreadcrumbPage>
+            <BreadcrumbPage>Airdrop NFTs</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <AirdropKlay />
+      <AirdropERC721 />
     </div>
   );
 }

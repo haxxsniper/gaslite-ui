@@ -8,7 +8,6 @@ import {
   useWriteContract,
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
-import { Badge } from "@/components/ui/badge";
 import { Loader2, Check, Plus, Info } from "lucide-react";
 import { abi } from "./abi";
 import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
@@ -44,6 +43,28 @@ export function AirdropKlay() {
     const file = e.target.files?.[0];
     if (file) {
       setFile(file);
+      fileReader.onload = function (e: ProgressEvent<FileReader>) {
+        if (e.target) {
+          const text = e.target.result;
+          csvFileToArray(text);
+        }
+      }
+      fileReader.readAsText(file);
+    }
+    console.log(file);
+  }
+
+  // function to convert the csv file to airdropList
+  function csvFileToArray(text: string | ArrayBuffer | null) {
+    if (typeof text === "string") {
+      const rows = text.split("\n").filter(
+        (item) => item !== "" 
+      );
+      const airdropList = rows.map((row) => {
+        const [address, amount] = row.split(",");
+        return { address, amount };
+      });
+      setAirdropList(airdropList);
     }
   }
 
@@ -67,7 +88,7 @@ export function AirdropKlay() {
     };
   }
 
-  // recalkulate total airdrop amount when airdropList changes
+  // calculate total airdrop amount when airdropList changes
   useEffect(() => {
     const total = airdropList.reduce((acc, item) => {
       return acc + BigInt(parseEther(item.amount));
@@ -98,13 +119,6 @@ export function AirdropKlay() {
       args: [addresses, airdropAmounts],
       value: totalAirdropAmount,
     });
-    // if (error) {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Transaction reverted",
-    //     description: `${(error as BaseError).shortMessage.split(":")[1]}`,
-    //   });
-    // }
   }
 
   function truncateAddress(address: string) {
@@ -117,7 +131,7 @@ export function AirdropKlay() {
     });
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-12 w-[768px]">
       <div className="flex flex-col gap-6">
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Airdrop{" "}
@@ -142,7 +156,7 @@ export function AirdropKlay() {
         <Tabs defaultValue="manual" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="manual">Manual</TabsTrigger>
-            <TabsTrigger value="file">File</TabsTrigger>
+            <TabsTrigger value="file-input">File</TabsTrigger>
           </TabsList>
           <TabsContent value="manual" className="flex flex-col gap-4">
             <p>
@@ -190,14 +204,49 @@ export function AirdropKlay() {
               <Plus className="h-4 w-4" />
             </Button>
           </TabsContent>
-          <TabsContent value="file">
-            <p>Upload a csv file</p>
+          <TabsContent className="flex flex-col gap-4" value="file-input">
+            <p>
+              <span className="inline-block mr-2">
+                <Info className="h-4 w-4" />
+              </span>
+              Upload a .csv file containing addresses and amounts.
+            </p>
             <Input
               type="file"
               accept=".csv"
               onChange={handleImportFile}
-              className="mb-4"
+              className="w-full"
             />
+            {
+              // if airdropList is empty, show the message
+              airdropList.length === 0 ? (
+                <p className="text-md text-muted-foreground">
+                  No addresses uploaded.
+                </p>
+              ) : (
+                // if airdropList is not empty, show the list
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <h2>Addresses</h2>
+                    <h2>Amounts</h2>
+                  </div>
+                  {airdropList.map((item, index) => (
+                    <div key={index} className="flex flex-row gap-4">
+                      <Input
+                        placeholder="Enter an address"
+                        value={item.address}
+                        readOnly
+                      />
+                      <Input
+                        placeholder="Enter an amount"
+                        value={item.amount}
+                        readOnly
+                      />
+                    </div>
+                  ))}
+                </div>
+              )
+            }
           </TabsContent>
         </Tabs>
       </div>
