@@ -11,12 +11,13 @@ import {
   useReadContracts,
 } from "wagmi";
 import { parseEther, formatEther, formatUnits } from "viem";
-import { Loader2, Check, Plus, Info, Trash2 } from "lucide-react";
+import { Loader2, Check, Plus, Info, Trash2, ArrowBigUpDash } from "lucide-react";
 import { abi } from "./abi";
 import { erc20Abi } from "./erc20-abi";
 import { CONTRACT_ADDRESS_BAOBAB, CONTRACT_ADDRESS_CYPRESS } from "./contract";
 import { useChainId } from "wagmi";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "next/navigation";
 
 type AirdropItem = {
   address: string;
@@ -26,6 +27,8 @@ type AirdropItem = {
 type Address = `0x${string}`;
 
 export function AirdropERC20() {
+  const searchParams = useSearchParams();
+  const erc20TokenAddress = searchParams.get("address");
   const account = useAccount();
   // state for airdrop list using manual input
   const [airdropList, setAirdropList] = useState<AirdropItem[]>([]);
@@ -36,7 +39,6 @@ export function AirdropERC20() {
   }, [airdropList]);
   // get chainID to determine which contract to use
   const chainId = useChainId();
-  const [erc20TokenAddress, setErc20TokenAddress] = useState<string>("");
   const { data: hash, error, isPending, writeContract } = useWriteContract();
   const {
     data: approveHash,
@@ -140,14 +142,6 @@ export function AirdropERC20() {
     };
   }
 
-  // calculate total airdrop amount when airdropList changes
-  // useEffect(() => {
-  //   const total = airdropList.reduce((acc, item) => {
-  //     return acc + BigInt(parseEther(item.amount));
-  //   }, BigInt(0));
-  //   setTotalAirdropAmount(total);
-  // }, [airdropList]);
-
   function executeAirdrop() {
     // sanitize airdropList from any empty objects
     const airdropListFiltered = airdropList.filter(
@@ -168,7 +162,12 @@ export function AirdropERC20() {
       address:
         chainId === 1001 ? CONTRACT_ADDRESS_BAOBAB : CONTRACT_ADDRESS_CYPRESS,
       functionName: "airdropERC20",
-      args: [erc20TokenAddress as Address, addresses, airdropAmounts, totalAirdropAmount]
+      args: [
+        erc20TokenAddress as Address,
+        addresses,
+        airdropAmounts,
+        totalAirdropAmount,
+      ],
     });
   }
 
@@ -216,6 +215,56 @@ export function AirdropERC20() {
       <div className="flex flex-col gap-4">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
           Step 1
+        </h2>
+        <div className="flex flex-row gap-2 items-center">
+          <Info className="h-4 w-4" />
+          <p>Review the token information</p>
+        </div>
+        {tokenInfoData ? (
+          <div
+            className={
+              totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+                ? "flex flex-col gap-2 border border-destructive p-4"
+                : "flex flex-col gap-2 border border-primary p-4"
+            }
+          >
+            <div className="flex flex-row gap-4 items-center">
+              <div className="bg-gray-300 rounded-full h-12 w-12 flex justify-center items-center">
+                <p>{tokenInfoData[1]?.result?.toString().charAt(0)}</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="font-semibold text-lg">
+                  {tokenInfoData[2]?.result?.toString()}
+                </p>
+                <p className="font-mono text-sm">
+                  {tokenInfoData[1]?.result?.toString()}
+                </p>
+              </div>
+            </div>
+            <p
+              className={
+                totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+                  ? "text-destructive"
+                  : "text-primary"
+              }
+            >
+              Approval amount:{" "}
+              {formatUnits(
+                BigInt(tokenInfoData[0]?.result ?? 0),
+                tokenInfoData[3]?.result ?? 0
+              )}
+              {totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
+                ? " - Insufficient approval amount please increase"
+                : " - You are ready to airdrop"}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-4">No results found.</p>
+        )}
+      </div>
+      <div className="flex flex-col gap-4">
+        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+          Step 2
         </h2>
         <div className="flex flex-row gap-2 items-center">
           <Info className="h-4 w-4" />
@@ -329,94 +378,39 @@ export function AirdropERC20() {
       </div>
       <div className="flex flex-col gap-4">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-          Step 2
+          Step 3
         </h2>
         <div className="flex flex-row gap-2 items-center">
           <Info className="h-4 w-4" />
           <p>Check and confirm the total airdrop amount</p>
         </div>
-
         <p className="font-semibold text-2xl">
           {formatEther(totalAirdropAmount).toString()}
-          <span className="inline-block align-baseline text-sm ml-2">tokens</span>
+          <span className="inline-block align-baseline text-sm ml-2 font-mono">
+            {tokenInfoData ? tokenInfoData[1]?.result?.toString() : "tokens"}
+          </span>
         </p>
-      </div>
-      <div className="flex flex-col gap-4">
-        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-          Step 3
-        </h2>
-        <div className="flex flex-row gap-2 items-center">
-          <Info className="h-4 w-4" />
-          <p>Add the token address to check</p>
-        </div>
-        <div className="flex flex-col gap-3">
-          <Input
-            name="tokenAddress"
-            type="text"
-            placeholder="Paste address of the token here"
-            value={erc20TokenAddress}
-            onChange={(e) => setErc20TokenAddress(e.target.value)}
-          />
-        </div>
-        {tokenInfoData ? (
-          <div
-            className={
-              totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
-                ? "flex flex-col gap-2 border border-destructive p-4"
-                : "flex flex-col gap-2 border border-primary p-4"
-            }
-          >
-            <div className="flex flex-row gap-4 items-center">
-              <div className="bg-gray-300 rounded-full h-12 w-12 flex justify-center items-center">
-                <p>{tokenInfoData[1]?.result?.toString().charAt(0)}</p>
-              </div>
-              <div className="flex flex-col">
-                <p className="font-semibold text-lg">
-                  {tokenInfoData[2]?.result?.toString()}
-                </p>
-                <p className="font-mono text-sm">
-                  {tokenInfoData[1]?.result?.toString()}
-                </p>
-              </div>
-            </div>
-            <p
-              className={
-                totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
-                  ? "text-destructive"
-                  : "text-primary"
-              }
-            >
-              Approval amount:{" "}
-              {formatUnits(
-                BigInt(tokenInfoData[0]?.result ?? 0),
-                tokenInfoData[3]?.result ?? 0
-              )}
-              {totalAirdropAmount > BigInt(tokenInfoData[0]?.result ?? 0)
-                ? " - Insufficient approval amount please increase"
-                : " - You are ready to airdrop"}
-            </p>
-            {approveIsPending ? (
-              <Button className="w-full" disabled>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please confirm in your wallet
-              </Button>
-            ) : (
-              <Button
-                disabled={
-                  totalAirdropAmount <= BigInt(tokenInfoData[0]?.result ?? 0)
-                }
-                className="w-full"
-                onClick={handleIncreaseApprovalAmount}
-              >
-                Increase approval amount to{" "}
-                {formatEther(totalAirdropAmount).toString()} {tokenInfoData[1]?.result?.toString()}
-              </Button>
-            )}
-          </div>
+        {approveIsPending ? (
+          <Button className="w-full" disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please confirm in your wallet
+          </Button>
         ) : (
-          <p className="mt-4">No results found.</p>
+          <Button
+            disabled={
+              totalAirdropAmount <= BigInt(tokenInfoData ? tokenInfoData[0]?.result ?? 0 : 0)
+            }
+            className="w-full"
+            onClick={handleIncreaseApprovalAmount}
+          >
+            <ArrowBigUpDash className="mr-2 h-4 w-4" />
+            Increase approval amount to{" "}
+            {formatEther(totalAirdropAmount).toString()}{" "}
+            {tokenInfoData ? tokenInfoData[1]?.result?.toString() : "tokens"}
+          </Button>
         )}
       </div>
+
       <div className="flex flex-col gap-4">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
           Step 4
@@ -440,14 +434,12 @@ export function AirdropERC20() {
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
           Transaction status
         </h2>
-        {
-          isConfirming && (
-            <div className="flex flex-row gap-2 text-yellow-500 font-semibold text-lg">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              Waiting for confirmation...
-            </div>
-          )
-        }
+        {isConfirming && (
+          <div className="flex flex-row gap-2 text-yellow-500 font-semibold text-lg">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            Waiting for confirmation...
+          </div>
+        )}
         {isConfirmed && (
           <div className="flex flex-row gap-2 text-green-500 font-semibold text-lg">
             <Check className="h-6 w-6" />
@@ -480,9 +472,7 @@ export function AirdropERC20() {
           </div>
         ) : (
           <>
-            <div className="flex flex-row gap-2">
-              Nothing yet :)
-            </div>
+            <div className="flex flex-row gap-2">Nothing yet :)</div>
           </>
         )}
       </div>
