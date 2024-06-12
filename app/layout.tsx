@@ -3,12 +3,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from './providers';
-import { Toaster } from "@/components/ui/toaster"
+import Footer from "@/components/footer";
+import MobileWarning from '@/components/mobile-warning';
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Klaytn Gaslite UI",
+  title: "Kaia Airdrop UI",
   description: "Interactive frontend for Klaytn Gaslite UI",
 };
 
@@ -21,9 +22,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          {children}
-          <Toaster /> 
+          <main className="flex flex-col gap-8 items-center justify-center py-12 px-4 lg:p-36">
+            <div className="hidden lg:flex lg:flex-col lg:gap-12 max-w-3xl">
+              {children}
+            </div>
+            <MobileWarning />
+          </main>
         </Providers>
+        <Footer />
       </body>
     </html>
   );

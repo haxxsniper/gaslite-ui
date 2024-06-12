@@ -1,18 +1,31 @@
-import { AirdropKlay } from '@/components/airdrop-klay';
-import Credits from '@/components/credits';
-import MobileWarning from '@/components/mobile-warning';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { AirdropKlay } from "@/components/airdrop-klay";
+import MobileWarning from "@/components/mobile-warning";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function Home() {
-
   return (
-    <main className="flex flex-col gap-8 items-center justify-center py-12 px-4 lg:p-36">
-      <div className="hidden lg:flex lg:flex-col lg:gap-12 max-w-3xl">
-        <ConnectButton />
-        <AirdropKlay />
-        <Credits />
-      </div>
-      <MobileWarning />
-    </main>
+    <div className="flex flex-col gap-12">
+      <ConnectButton />
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Airdrop KAIA</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <AirdropKlay />
+    </div>
   );
 }
